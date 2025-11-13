@@ -89,6 +89,9 @@ class StorageManager {
    * Validate data structure based on key
    */
   private validateData(key: string, data: unknown): boolean {
+    // Allow null for focus settings (optional data)
+    if (key === STORAGE_KEYS.FOCUS && data === null) return true;
+    
     if (!data) return false;
 
     switch (key) {
@@ -99,7 +102,7 @@ class StorageManager {
         return Array.isArray(data) && data.every(this.isValidTimetableBlock);
 
       case STORAGE_KEYS.FOCUS:
-        return data === null || this.isValidFocusSettings(data);
+        return this.isValidFocusSettings(data);
 
       default:
         return true;
