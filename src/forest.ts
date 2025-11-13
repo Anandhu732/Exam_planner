@@ -266,11 +266,10 @@ class ForestManager {
   /**
    * Get statistics
    */
-  getStats(): { sessions: number; trees: number; quotes: string[] } {
+  getStats(): { sessions: number; trees: number } {
     return {
       sessions: this.completedSessions,
       trees: this.trees.length,
-      quotes: MOTIVATIONAL_QUOTES,
     };
   }
 

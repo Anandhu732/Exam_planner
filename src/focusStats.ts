@@ -45,20 +45,8 @@ class FocusStatsManager {
         </div>
       </div>
 
-      <h4 style="margin-top: var(--spacing-lg); margin-bottom: var(--spacing-sm); font-weight: 800;">
-        🌟 Your Motivational Quotes
-      </h4>
-      <div class="detail-list">
-        ${stats.quotes.map((quote, index) => `
-          <div class="detail-item" style="grid-template-columns: 40px 1fr;">
-            <div class="detail-label">#${index + 1}</div>
-            <div class="detail-value">${quote}</div>
-          </div>
-        `).join('')}
-      </div>
-
       <div class="sticky-note" style="margin-top: var(--spacing-md); display: block;">
-        💡 <strong>Tip:</strong> Each completed Pomodoro work session grows a new tree in your forest. Keep focusing to build your forest!
+        💡 <strong>Tip:</strong> Each completed work session grows a new tree in your forest. You'll see a motivational message when you complete a session!
       </div>
     `;
 

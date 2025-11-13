@@ -228,6 +228,14 @@ class FocusTimerManager {
       this.startTime = Date.now();
       this.totalDuration = minutes * 60 * 1000;
       this.targetTime = this.startTime + this.totalDuration;
+    } else {
+      // Resuming from pause - adjust start time to account for pause duration
+      const remainingTime = this.targetTime - Date.now();
+      if (remainingTime > 0) {
+        this.startTime = Date.now();
+        this.totalDuration = remainingTime;
+        this.targetTime = this.startTime + remainingTime;
+      }
     }
 
     this.timer = window.setInterval(() => this.tickPomodoro(), 100);
@@ -270,6 +278,9 @@ class FocusTimerManager {
   private handlePomodoroPhaseComplete(): void {
     this.playNotification();
 
+    // Pause current timer
+    this.pause();
+
     if (this.pomodoroState.phase === 'work') {
       this.pomodoroState.count++;
       this.renderCycles();
@@ -292,8 +303,17 @@ class FocusTimerManager {
     // Sync mode selector to new phase
     this.modeSelect.value = this.pomodoroState.phase;
 
+    // Reset timer state
     this.targetTime = null;
     this.startTime = null;
+    this.totalDuration = 0;
+
+    // Set up next phase duration
+    const nextPhaseDuration = this.getCurrentPhaseDuration();
+    this.updateDisplay(nextPhaseDuration * 60 * 1000);
+
+    // Auto-start next phase
+    this.startPomodoro();
   }
 
   private pause(): void {
