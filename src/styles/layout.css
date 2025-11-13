@@ -1,0 +1,820 @@
+/* Layout & Grid System */
+
+/* Spine Decoration */
+.spine {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 56px;
+  background: linear-gradient(#fafafa, #ececec);
+  border-right: 2px solid #d0d0d0;
+  box-shadow: 0 0 0 1px var(--white) inset;
+  z-index: 2;
+}
+
+/* Ring Decorations */
+.rings {
+  position: fixed;
+  left: 14px;
+  top: 18px;
+  bottom: 18px;
+  width: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.ring {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #dfe7ef, #b0bec5 60%, #8a9aa6);
+  box-shadow: inset 0 3px 4px rgba(0, 0, 0, 0.25), 0 1px 0 var(--white);
+}
+
+/* Header */
+header {
+  padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-sm) 72px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  height: 46px;
+  backdrop-filter: blur(6px);
+  background: color-mix(in oklab, var(--paper) 75%, white 25%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.header-controls {
+  margin-left: auto;
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Main App Container - Unified Layout */
+.app {
+  height: calc(100vh - 46px);
+  padding: var(--spacing-md) var(--spacing-xl) var(--spacing-md) 72px;
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: 1fr 1fr 0.6fr;
+  grid-template-rows: 1fr 0.5fr;
+  grid-template-areas:
+    'cal focus player'
+    'tt tt player';
+  overflow: hidden;
+}
+
+/* Mobile: Enable full page scroll */
+@media (max-width: 940px) {
+  html, body {
+    height: auto;
+    overflow-x: hidden;
+  }
+}
+
+/* Panel Grid Areas */
+.panel {
+  display: grid !important;
+  overflow: hidden;
+  contain: layout style paint;
+  content-visibility: auto;
+}
+
+.panel.cal {
+  grid-area: cal;
+  display: flex !important;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  overflow: hidden;
+}
+
+.panel.cal > div:first-child {
+  flex-shrink: 0;
+}
+
+.panel.cal .calendar {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel.cal .exam-list {
+  display: none;
+}
+
+.panel.tt {
+  grid-area: tt;
+  grid-template-rows: auto 1fr;
+  gap: var(--spacing-sm);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.panel.focus {
+  grid-area: focus;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: var(--spacing-sm);
+  overflow: hidden;
+}
+
+.panel.player {
+  grid-area: player;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--spacing-sm);
+  overflow: hidden;
+}
+
+/* Calendar Layout */
+.calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.cal-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.cal-grid#dow {
+  grid-template-rows: auto;
+  min-height: 0;
+}
+
+.cal-grid#grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.dow {
+  font-weight: 800;
+  text-align: center;
+  opacity: 0.7;
+  font-size: var(--font-size-small);
+  padding: var(--spacing-xs);
+}
+
+.day {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  width: 100%;
+  aspect-ratio: 1;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.day:hover:not(.faded) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.day .num {
+  font-weight: 800;
+  font-size: var(--font-size-small);
+  line-height: 1;
+}
+
+.day.today {
+  outline: 3px dashed var(--accent);
+  outline-offset: 1px;
+}
+
+.day.faded {
+  opacity: 0.35;
+}
+
+.pill {
+  position: absolute;
+  left: var(--spacing-xs);
+  right: var(--spacing-xs);
+  bottom: var(--spacing-xs);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+/* Exam List */
+.exam-list {
+  display: grid;
+  gap: var(--spacing-sm);
+  grid-auto-rows: minmax(24px, auto);
+  overflow-y: auto;
+}
+
+.exam-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: transform var(--transition-fast);
+}
+
+.exam-item:hover {
+  transform: translateX(2px);
+}
+
+/* Add Form */
+.add-form {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr auto;
+  gap: var(--spacing-sm);
+  align-items: end;
+  margin-top: var(--spacing-sm);
+}
+
+.form-row-full {
+  grid-column: 1 / -1;
+}
+
+/* Weekly Timetable Layout */
+.weekly-grid {
+  display: flex;
+  gap: var(--spacing-xs);
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+
+.weekly-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.weekly-column {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  padding: var(--spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 140px;
+  max-width: 140px;
+  flex-shrink: 0;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.weekly-column::-webkit-scrollbar {
+  width: 4px;
+}
+
+.weekly-column::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.weekly-column::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.weekly-column::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.weekly-column-header {
+  font-weight: 900;
+  font-size: var(--font-size-small);
+  text-align: center;
+  padding: var(--spacing-xs);
+  background: var(--accent);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.weekly-event {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-xs);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  background: var(--yellow);
+  transition: transform var(--transition-fast);
+  position: relative;
+}
+
+.weekly-event:hover {
+  transform: translateX(2px);
+}
+
+.weekly-event.completed {
+  opacity: 0.6;
+  text-decoration: line-through;
+  background: #e0e0e0 !important;
+}
+
+.weekly-event.completed::after {
+  content: '✓';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #4caf50;
+  text-decoration: none;
+}
+
+.weekly-event-title {
+  font-weight: 900;
+  margin-bottom: 2px;
+}
+
+.weekly-event-time {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* Focus/Timer Layout */
+.focus-row {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.timer-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.timer-controls select,
+.timer-controls input[type="number"] {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--white);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-controls #focusSelect {
+  flex: 1;
+  min-width: 150px;
+}
+
+.timer-controls #focusMinutes {
+  width: 80px;
+}
+
+.timer-controls #mode {
+  width: 135px;
+  font-size: 13px;
+}
+
+.timer-buttons {
+  display: flex;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+}
+
+.display {
+  font-weight: 900;
+  font-size: clamp(18px, 3.5vw, 28px);
+  text-align: center;
+  background: var(--high);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-sm);
+  box-shadow: var(--shadow-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.pills {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.cycles-container {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/* Forest Animation */
+.forest-container {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(to bottom, #87CEEB 0%, #90EE90 60%, #228B22 100%);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+#forestCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.motivational-quote {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-lg);
+  max-width: 80%;
+  text-align: center;
+  font-weight: 700;
+  animation: fadeInScale 0.5s ease-out;
+  z-index: 10;
+}
+
+.motivational-quote.hidden {
+  display: none;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Media Player */
+.player-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+#playlistUrl {
+  flex: 1;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  font-size: var(--font-size-base);
+}
+
+.player-presets {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.preset-btn {
+  transition: transform var(--transition-fast);
+}
+
+.preset-btn:hover {
+  transform: translateY(-2px);
+}
+
+.player-frame {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  overflow: hidden;
+}
+
+.player-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Footer */
+footer {
+  padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-lg) 72px;
+  opacity: 0.7;
+  font-size: var(--font-size-small);
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .app {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 0.5fr 0.4fr;
+    grid-template-areas:
+      'cal focus'
+      'tt tt'
+      'player player';
+  }
+}
+
+@media (max-width: 940px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      'cal'
+      'focus'
+      'tt'
+      'player';
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-lg) 72px;
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  footer {
+    display: none;
+  }
+
+  .add-form {
+    grid-template-columns: 1fr;
+  }
+
+  .forest-container {
+    height: 150px;
+  }
+
+  .panel.cal,
+  .panel.focus,
+  .panel.tt,
+  .panel.player {
+    max-height: none;
+    height: auto;
+    overflow: visible;
+  }
+
+  .panel.cal .calendar {
+    overflow: visible;
+  }
+
+  .cal-grid#grid {
+    overflow: visible;
+  }
+
+  /* Disable container scrolling */
+  .weekly-grid,
+  .exam-list,
+  .weekly-column {
+    overflow: visible;
+    max-height: none;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  header {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    height: auto;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  .app {
+    padding: var(--spacing-sm);
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .spine {
+    display: none;
+  }
+
+  .rings {
+    display: none;
+  }
+
+  .header-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Calendar mobile optimizations */
+  .cal-header {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .cal-controls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cal-instruction {
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .day {
+    padding: 4px;
+    font-size: 11px;
+  }
+
+  .day .num {
+    font-size: 11px;
+  }
+
+  .pill {
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
+  }
+
+  .tag {
+    font-size: 8px;
+    padding: 1px 3px;
+  }
+
+  /* Timer mobile optimizations */
+  .timer-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .timer-controls select,
+  .timer-controls input {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .timer-buttons {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .display {
+    font-size: 1.5rem;
+    padding: var(--spacing-xs);
+  }
+
+  .forest-container {
+    height: 120px;
+  }
+
+  /* Weekly timetable mobile */
+  .weekly-grid {
+    overflow-x: auto;
+    overflow-y: visible;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+
+  .weekly-column {
+    min-width: 120px;
+    max-width: 120px;
+    overflow: visible;
+    height: auto;
+  }
+
+  .weekly-event {
+    font-size: 10px;
+    padding: 4px;
+  }
+
+  .weekly-event-time {
+    font-size: 9px;
+  }
+
+  /* Player mobile */
+  .player-controls {
+    flex-direction: column;
+  }
+
+  .player-controls input {
+    width: 100%;
+  }
+
+  .player-controls button {
+    width: 100%;
+  }
+
+  .player-frame {
+    min-height: 250px;
+  }
+
+  /* Modal mobile */
+  .modal {
+    width: 95%;
+    max-width: 95%;
+    margin: var(--spacing-sm);
+  }
+
+  .modal-form .form-group {
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1rem;
+  }
+
+  .panel {
+    border-radius: var(--radius-sm);
+  }
+
+  .cal-grid {
+    gap: 4px;
+  }
+
+  .day {
+    padding: 2px;
+    border-width: 1px;
+  }
+
+  .display {
+    font-size: 1.3rem;
+  }
+
+  .btn {
+    padding: var(--spacing-xs);
+    font-size: 12px;
+  }
+
+  .btn--small {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 940px) and (orientation: landscape) {
+  .app {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      'cal focus'
+      'tt player';
+  }
+
+  .forest-container {
+    height: 120px;
+  }
+}

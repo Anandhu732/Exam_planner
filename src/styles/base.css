@@ -1,0 +1,182 @@
+/* CSS Variables & Design System */
+:root {
+  /* Color Palette */
+  --paper: #fdfdf7;
+  --ink: #1a1a1a;
+  --rule: #c6d3ff;
+  --margin: #ffb3b3;
+  --accent: #6b8cff;
+  --tape: #ffdca8;
+  --high: #ffd7e2;
+  --mint: #c9f0e1;
+  --yellow: #fff5b1;
+  --ring: #708090;
+  --white: #ffffff;
+  --border: #222222;
+  --shadow: rgba(0, 0, 0, 0.15);
+
+  /* Typography */
+  --font-primary: 'Segoe UI', ui-rounded, system-ui, -apple-system, 'Comic Sans MS', 'Bradley Hand', 'Segoe Print', cursive;
+  --font-size-base: 16px;
+  --font-size-small: 12px;
+  --font-size-large: 24px;
+  --line-height: 1.35;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 6px;
+  --spacing-md: 8px;
+  --spacing-lg: 10px;
+  --spacing-xl: 18px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-sm: 1px 1px 0 var(--border);
+  --shadow-md: 2px 2px 0 var(--border);
+  --shadow-lg: 3px 3px 0 var(--border);
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+}
+
+/* Performance Optimizations */
+html {
+  content-visibility: auto;
+}
+
+/* Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  color: var(--ink);
+  background: var(--paper);
+  font: var(--font-size-base)/var(--line-height) var(--font-primary);
+  font-display: swap;
+  background-image:
+    linear-gradient(to right, transparent 58px, var(--margin) 58px, var(--margin) 60px, transparent 60px),
+    repeating-linear-gradient(to bottom, var(--rule) 0, var(--rule) 1px, transparent 1px, transparent 32px);
+  background-attachment: fixed;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  will-change: contents;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 900;
+}
+
+h1 {
+  font-size: clamp(18px, 2vw, var(--font-size-large));
+  letter-spacing: 0.3px;
+}
+
+h2 {
+  font-size: 15px;
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Form Elements */
+input,
+select,
+button,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input,
+select {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  background: var(--white);
+  width: 100%;
+}
+
+input:focus,
+select:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Utility Classes */
+.small {
+  font-size: var(--font-size-small);
+  opacity: 0.7;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Loading State */
+.loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Error Message */
+.error-message {
+  background: #ffebee;
+  border: 2px solid #c62828;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  color: #c62828;
+  margin: var(--spacing-md) 0;
+}
+
+/* Success Message */
+.success-message {
+  background: #e8f5e9;
+  border: 2px solid #2e7d32;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  color: #2e7d32;
+  margin: var(--spacing-md) 0;
+}

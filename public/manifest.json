@@ -1,0 +1,35 @@
+{
+  "name": "Exam Planner",
+  "short_name": "ExamPlanner",
+  "description": "Modern exam planning application with calendar, timetable, and focus timer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfdf7",
+  "theme_color": "#6b8cff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Add Exam",
+      "short_name": "Add",
+      "description": "Quickly add a new exam",
+      "url": "/?action=add",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

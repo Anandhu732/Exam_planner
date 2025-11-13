@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
+    />
+    <meta
+      name="description"
+      content="Modern exam planning application with calendar, timetable, and focus timer"
+    />
+    <meta name="theme-color" content="#6b8cff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Exam Planner" />
+
+    <title>Exam Planner - Organize Your Studies</title>
+
+    <!-- Critical CSS - Inline for faster load -->
+    <style>
+      /* Prevent FOUC */
+      body {
+        margin: 0;
+        padding: 0;
+        background: #fdfdf7;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        color: #000;
+        opacity: 0;
+        transition: opacity 0.2s ease-in;
+      }
+      body.loaded {
+        opacity: 1;
+      }
+
+      /* Critical layout to prevent flash */
+      .spine {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 56px;
+        background: linear-gradient(#fafafa, #ececec);
+        border-right: 2px solid #d0d0d0;
+        z-index: 2;
+      }
+
+      header {
+        padding: 0.5rem 1.5rem 0.5rem 72px;
+        height: 46px;
+        background: rgba(253, 253, 247, 0.95);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .app {
+        min-height: calc(100vh - 46px);
+        padding: 1rem;
+      }
+
+      /* Loading spinner */
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #6b8cff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 9999;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+    </style>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Icons -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📒</text></svg>"
+    />
+
+    <!-- Tesseract.js for OCR -->
+    <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="/src/styles/base.css" as="style" />
+    <link rel="preload" href="/src/styles/components.css" as="style" />
+    <link rel="preload" href="/src/styles/layout.css" as="style" />
+
+    <!-- Module -->
+    <script type="module" src="/src/main.ts"></script>
+
+    <!-- Remove loading class when fully loaded -->
+    <script>
+      window.addEventListener('load', () => {
+        document.body.classList.add('loaded');
+        const spinner = document.querySelector('.loading-spinner');
+        if (spinner) spinner.remove();
+      });
+    </script>
+  </head>
+  <body>
+    <!-- Loading indicator -->
+    <div class="loading-spinner"></div>
+
+    <!-- Decorative spine and rings -->
+    <div class="spine" aria-hidden="true"></div>
+    <div class="rings" aria-hidden="true">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+      <h1>📒 Exam Planner</h1>
+      <div class="header-controls">
+        <button
+          class="btn btn--danger"
+          id="resetBtn"
+          title="Clear all data"
+          aria-label="Reset all data"
+        >
+          🧼 Reset
+        </button>
+      </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="app">
+      <!-- Left Column: Calendar & Exam List -->
+      <section class="panel cal" id="panel-calendar">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0">
+            Calendar
+            <small id="todayStr" class="small"></small>
+          </h2>
+        </div>
+
+        <div class="calendar">
+          <div class="cal-header">
+            <div class="cal-controls">
+              <button class="btn btn--nav" id="prevMonth" aria-label="Previous month">◀</button>
+              <div class="sticky-note" id="monthTitle" aria-live="polite">Month YYYY</div>
+              <button class="btn btn--nav" id="nextMonth" aria-label="Next month">▶</button>
+            </div>
+            <div class="cal-instruction">Tap a day to add an exam</div>
+          </div>
+
+          <div class="cal-grid" id="dow" role="row"></div>
+          <div class="cal-grid" id="grid" role="grid"></div>
+        </div>
+
+        <!-- Exam List -->
+        <div id="examList" class="exam-list" role="list" aria-label="Exam list"></div>
+      </section>
+
+      <!-- Right Column: Timer/Focus with Forest Animation -->
+      <section class="panel focus" id="panel-focus">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0">🌲 Focus Timer</h2>
+          <div style="display: flex; gap: var(--spacing-xs); align-items: center">
+            <button class="btn btn--small" id="viewFocusStats" title="View statistics">
+              📊 Stats
+            </button>
+            <button
+              class="btn-icon"
+              id="timerSettings"
+              title="Timer settings"
+              aria-label="Timer settings"
+            >
+              ⚙️
+            </button>
+          </div>
+        </div>
+
+        <!-- Forest Animation Container -->
+        <div id="forestContainer" class="forest-container">
+          <canvas id="forestCanvas" width="600" height="200"></canvas>
+          <div id="motivationalQuote" class="motivational-quote hidden"></div>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="display" class="display" role="timer" aria-live="polite">00:00:00</div>
+
+        <!-- Timer Controls Row -->
+        <div class="timer-controls">
+          <select id="focusSelect" aria-label="Select exam for countdown">
+            <option value="">— choose exam —</option>
+          </select>
+
+          <input
+            id="focusMinutes"
+            type="number"
+            min="1"
+            max="999"
+            placeholder="25"
+            aria-label="Minutes for countdown"
+          />
+
+          <select id="mode" aria-label="Session phase">
+            <option value="work">🔥 Work</option>
+            <option value="short">☕ Break</option>
+            <option value="long">🌙 Long Break</option>
+            <option value="verylong">🏖️ Extended</option>
+          </select>
+
+          <div class="timer-buttons">
+            <button
+              class="btn-icon btn-icon--large"
+              id="start"
+              aria-label="Start timer"
+              title="Start"
+            >
+              ▶️
+            </button>
+            <button
+              class="btn-icon btn-icon--large"
+              id="pause"
+              aria-label="Pause timer"
+              title="Pause"
+            >
+              ⏸️
+            </button>
+            <button
+              class="btn-icon btn-icon--large"
+              id="reset"
+              aria-label="Reset timer"
+              title="Reset"
+            >
+              ⏹️
+            </button>
+          </div>
+        </div>
+
+        <!-- Pomodoro Cycles -->
+        <div class="pills">
+          <span class="small">Cycles:</span>
+          <div id="cycles" class="cycles-container" aria-label="Pomodoro cycles"></div>
+        </div>
+      </section>
+
+      <!-- Bottom Row: Weekly Timetable -->
+      <section class="panel tt" id="panel-timetable">
+        <h2>📅 Weekly Timetable</h2>
+        <div class="weekly-grid" id="weeklyGrid" role="grid" aria-label="Weekly timetable"></div>
+      </section>
+
+      <!-- Media Player Section -->
+      <section class="panel player" id="panel-player">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0">🎵 Media Player</h2>
+          <button class="btn btn--small btn--danger" id="clearPlayer" title="Clear player">
+            🧹 Clear
+          </button>
+        </div>
+        <div class="player-controls">
+          <input
+            id="playlistUrl"
+            type="text"
+            placeholder="Paste YouTube URL (video/playlist) or search..."
+            aria-label="YouTube URL or search query"
+          />
+          <button class="btn btn--primary" id="loadPlaylist" aria-label="Load content">Load</button>
+        </div>
+        <div id="playerFrame" class="player-frame"></div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div class="small">✨ Modern architecture • TypeScript • Modular • Optimized • PWA-ready</div>
+    </footer>
+
+    <!-- Modal Containers -->
+    <!-- Exam Details Modal -->
+    <div class="modal-overlay" id="examModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">📚 Exam Details</h3>
+          <button class="modal-close" aria-label="Close modal">×</button>
+        </div>
+        <div class="modal-body" id="examModalBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn--danger" id="examModalDelete">Delete</button>
+          <button class="btn" id="examModalClose">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Focus Stats Modal -->
+    <div class="modal-overlay" id="focusModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">🌲 Focus Statistics</h3>
+          <button class="modal-close" aria-label="Close modal">×</button>
+        </div>
+        <div class="modal-body" id="focusModalBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn--danger" id="resetForest">Reset Forest</button>
+          <button class="btn" id="focusModalClose">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Event Details Modal -->
+    <div class="modal-overlay" id="weeklyModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">📅 Event Details</h3>
+          <button class="modal-close" aria-label="Close modal">×</button>
+        </div>
+        <div class="modal-body" id="weeklyModalBody"></div>
+        <div class="modal-footer">
+          <button class="btn" id="weeklyModalClose">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Exam Modal -->
+    <div class="modal-overlay" id="addExamModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">➕ Add Exam</h3>
+          <button class="modal-close" aria-label="Close modal">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="addForm" class="modal-form" autocomplete="off" aria-label="Add exam form">
+            <div class="form-group">
+              <label for="title">Subject</label>
+              <input
+                id="title"
+                type="text"
+                placeholder="e.g. MPMC"
+                required
+                maxlength="100"
+                aria-required="true"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="date">Date</label>
+              <input id="date" type="date" required aria-required="true" />
+            </div>
+
+            <div class="form-group">
+              <label for="time">Time</label>
+              <input id="time" type="time" />
+            </div>
+
+            <div class="form-group">
+              <label for="tag">Color</label>
+              <input id="tag" type="color" value="#fff5b1" />
+            </div>
+
+            <div class="form-group">
+              <label for="notes">Notes</label>
+              <input id="notes" type="text" placeholder="Exam hall, materials…" maxlength="500" />
+            </div>
+
+            <button class="btn btn--primary" type="submit" aria-label="Add exam">
+              ➕ Add Exam
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timer Settings Modal -->
+    <div class="modal-overlay" id="timerSettingsModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3 class="modal-title">⚙️ Timer Settings</h3>
+          <button class="modal-close" aria-label="Close modal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="settings-grid">
+            <div class="form-group">
+              <label for="pWork">Work (minutes)</label>
+              <input
+                id="pWork"
+                type="number"
+                value="25"
+                min="1"
+                max="120"
+                aria-label="Work minutes"
+              />
+            </div>
+            <div class="form-group">
+              <label for="pShort">Short Break (minutes)</label>
+              <input
+                id="pShort"
+                type="number"
+                value="5"
+                min="1"
+                max="60"
+                aria-label="Short break minutes"
+              />
+            </div>
+            <div class="form-group">
+              <label for="pLong">Long Break (minutes)</label>
+              <input
+                id="pLong"
+                type="number"
+                value="15"
+                min="1"
+                max="60"
+                aria-label="Long break minutes"
+              />
+            </div>
+            <div class="form-group">
+              <label for="pEvery">Long Break Every (cycles)</label>
+              <input
+                id="pEvery"
+                type="number"
+                value="4"
+                min="1"
+                max="10"
+                aria-label="Cycles until long break"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn--primary" id="saveTimerSettings">Save Settings</button>
+          <button class="btn" id="timerSettingsClose">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <div style="padding: 20px; text-align: center">
+        <h2>JavaScript Required</h2>
+        <p>Please enable JavaScript to use this application.</p>
+      </div>
+    </noscript>
+  </body>
+</html>
